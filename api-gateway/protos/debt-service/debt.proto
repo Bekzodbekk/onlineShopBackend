@@ -8,6 +8,7 @@ service DebtService{
     rpc DeleteDebt(DeleteDebtReq) returns (DebtResp){}
     rpc GetDebtById(GetDebtByIdReq) returns (DebtResp){}
     rpc GetDebtByFilter(GetDebtByFilterReq) returns (GetDebtByFilterResp){}
+    rpc UpdateStockDebt(UpdateStockDebtReq) returns (DebtResp){}
 }
 
 message Debt{
@@ -63,6 +64,12 @@ message UpdateDebtReq{
     string deadline = 12;
 }
 
+// UpdateStockDebt
+message UpdateStockDebtReq{
+    string id = 1;
+    string paid_price = 2;
+}
+
 // Delete Debt
 message DeleteDebtReq{
     string id = 1;
@@ -77,8 +84,6 @@ message GetDebtByIdReq{
 message GetDebtByFilterReq{
     string search = 1;
 }
-
-
 
 // Get Debt By Filter Response
 message GetDebtByFilterResp{

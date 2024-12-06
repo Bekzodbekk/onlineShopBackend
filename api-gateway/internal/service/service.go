@@ -71,3 +71,6 @@ func (s *ServiceRepositoryClient) GetDebtById(ctx context.Context, req *pbDebt.G
 func (s *ServiceRepositoryClient) GetDebtByFilter(ctx context.Context, req *pbDebt.GetDebtByFilterReq) (*pbDebt.GetDebtByFilterResp, error) {
 	return s.debtClient.GetDebtByFilter(ctx, req)
 }
+func (s *ServiceRepositoryClient) UpdateStockDebt(ctx context.Context, req *pbDebt.UpdateStockDebtReq) (*pbDebt.DebtResp, error) {
+	return s.debtClient.UpdateStockDebt(ctx, req)
+}

@@ -87,6 +87,30 @@ func (q *DebtREPO) CreateDebt(ctx context.Context, req *debtpb.CreateDebtReq) (*
 	}, nil
 }
 
+func (q *DebtREPO) UpdateStockDebt(ctx context.Context, req *debtpb.UpdateStockDebtReq) (*debtpb.DebtResp, error) {
+	id, err := uuid.Parse(req.Id)
+	if err != nil {
+		return nil, err
+	}
+	paidPrice, err := strconv.ParseFloat(req.PaidPrice, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	err = q.queries.UpdateStockDebt(ctx, storage.UpdateStockDebtParams{
+		ID:        id,
+		PricePaid: paidPrice,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &debtpb.DebtResp{
+		Status:  true,
+		Message: "Debt Stock Updated Successfuly",
+	}, nil
+}
+
 func (q *DebtREPO) UpdateDebt(ctx context.Context, req *debtpb.UpdateDebtReq) (*debtpb.DebtResp, error) {
 	logger.Info("UpdateDebt: Started for debt ID ", req.Id)
 
@@ -232,6 +256,9 @@ func (q *DebtREPO) GetDebtByFilter(ctx context.Context, req *debtpb.GetDebtByFil
 	debts := make([]*debtpb.Debt, 0, len(resp))
 
 	for _, i := range resp {
+		if (i.Status == sql.NullInt32{Int32: 2, Valid: true}) {
+			continue
+		}
 		debts = append(debts, &debtpb.Debt{
 			Id:           i.ID.String(),
 			FirstName:    i.FirstName,
@@ -257,7 +284,7 @@ func (q *DebtREPO) GetDebtByFilter(ctx context.Context, req *debtpb.GetDebtByFil
 	return &debtpb.GetDebtByFilterResp{
 		Status:       true,
 		Message:      "Get By Filter Successfully",
-		GetCountResp: int32(len(resp)),
+		GetCountResp: int32(len(debts)),
 		Debt:         debts,
 	}, nil
 }

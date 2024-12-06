@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"api-gateway/genproto/debtpb"
 	pb "api-gateway/genproto/debtpb"
 	"api-gateway/logger"
 	"context"
@@ -147,5 +148,21 @@ func (h *HandlerST) GetDebtByFilter(c *gin.Context) {
 		return
 	}
 	logger.Info("GetDebtByFilter: Successfully ", len(resp.Debt))
+	c.JSON(200, resp)
+}
+
+func (h *HandlerST) UpdateStockDebt(c *gin.Context) {
+	req := debtpb.UpdateStockDebtReq{}
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, err.Error())
+		return
+	}
+
+	resp, err := h.service.UpdateStockDebt(c, &req)
+	if err != nil {
+		c.JSON(400, err.Error())
+		return
+	}
+
 	c.JSON(200, resp)
 }

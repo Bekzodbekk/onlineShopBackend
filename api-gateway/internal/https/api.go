@@ -52,6 +52,7 @@ func NewGin(service *service.ServiceRepositoryClient, port int, minio *minio.Cli
 	r.GET("/debts/:id", apiHandler.GetDebtById)
 	r.GET("/debts", apiHandler.GetDebtByFilter)
 	r.DELETE("/debts/:id", apiHandler.DeleteDebt)
+	r.PUT("/debt-paid", apiHandler.UpdateStockDebt)
 
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},

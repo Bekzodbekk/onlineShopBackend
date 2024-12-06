@@ -65,6 +65,17 @@ RETURNING
     updated_at,
     deleted_at;
     
+-- name: UpdateStockDebt :exec
+UPDATE debts
+SET 
+    price_paid = price_paid + $2,
+    status = CASE 
+        WHEN price_paid + $2 >= price THEN 2
+        ELSE status
+    END
+WHERE id = $1;
+
+
 -- name: DeleteDebt :exec
 UPDATE debts
 SET deleted_at = $2

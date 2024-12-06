@@ -32,3 +32,6 @@ func (s *DebtService) GetDebtById(ctx context.Context, req *debtpb.GetDebtByIdRe
 func (s *DebtService) GetDebtByFilter(ctx context.Context, req *debtpb.GetDebtByFilterReq) (*debtpb.GetDebtByFilterResp, error) {
 	return s.repo.GetDebtByFilter(ctx, req)
 }
+func (s *DebtService) UpdateStockDebt(ctx context.Context, req *debtpb.UpdateStockDebtReq) (*debtpb.DebtResp, error) {
+	return s.repo.UpdateStockDebt(ctx, req)
+}

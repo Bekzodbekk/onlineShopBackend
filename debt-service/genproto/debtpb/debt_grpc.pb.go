@@ -24,6 +24,7 @@ const (
 	DebtService_DeleteDebt_FullMethodName      = "/DebtService/DeleteDebt"
 	DebtService_GetDebtById_FullMethodName     = "/DebtService/GetDebtById"
 	DebtService_GetDebtByFilter_FullMethodName = "/DebtService/GetDebtByFilter"
+	DebtService_UpdateStockDebt_FullMethodName = "/DebtService/UpdateStockDebt"
 )
 
 // DebtServiceClient is the client API for DebtService service.
@@ -35,6 +36,7 @@ type DebtServiceClient interface {
 	DeleteDebt(ctx context.Context, in *DeleteDebtReq, opts ...grpc.CallOption) (*DebtResp, error)
 	GetDebtById(ctx context.Context, in *GetDebtByIdReq, opts ...grpc.CallOption) (*DebtResp, error)
 	GetDebtByFilter(ctx context.Context, in *GetDebtByFilterReq, opts ...grpc.CallOption) (*GetDebtByFilterResp, error)
+	UpdateStockDebt(ctx context.Context, in *UpdateStockDebtReq, opts ...grpc.CallOption) (*DebtResp, error)
 }
 
 type debtServiceClient struct {
@@ -95,6 +97,16 @@ func (c *debtServiceClient) GetDebtByFilter(ctx context.Context, in *GetDebtByFi
 	return out, nil
 }
 
+func (c *debtServiceClient) UpdateStockDebt(ctx context.Context, in *UpdateStockDebtReq, opts ...grpc.CallOption) (*DebtResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DebtResp)
+	err := c.cc.Invoke(ctx, DebtService_UpdateStockDebt_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DebtServiceServer is the server API for DebtService service.
 // All implementations must embed UnimplementedDebtServiceServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type DebtServiceServer interface {
 	DeleteDebt(context.Context, *DeleteDebtReq) (*DebtResp, error)
 	GetDebtById(context.Context, *GetDebtByIdReq) (*DebtResp, error)
 	GetDebtByFilter(context.Context, *GetDebtByFilterReq) (*GetDebtByFilterResp, error)
+	UpdateStockDebt(context.Context, *UpdateStockDebtReq) (*DebtResp, error)
 	mustEmbedUnimplementedDebtServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedDebtServiceServer) GetDebtById(context.Context, *GetDebtByIdR
 }
 func (UnimplementedDebtServiceServer) GetDebtByFilter(context.Context, *GetDebtByFilterReq) (*GetDebtByFilterResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDebtByFilter not implemented")
+}
+func (UnimplementedDebtServiceServer) UpdateStockDebt(context.Context, *UpdateStockDebtReq) (*DebtResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateStockDebt not implemented")
 }
 func (UnimplementedDebtServiceServer) mustEmbedUnimplementedDebtServiceServer() {}
 func (UnimplementedDebtServiceServer) testEmbeddedByValue()                     {}
@@ -240,6 +256,24 @@ func _DebtService_GetDebtByFilter_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DebtService_UpdateStockDebt_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateStockDebtReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DebtServiceServer).UpdateStockDebt(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DebtService_UpdateStockDebt_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DebtServiceServer).UpdateStockDebt(ctx, req.(*UpdateStockDebtReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DebtService_ServiceDesc is the grpc.ServiceDesc for DebtService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +300,10 @@ var DebtService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDebtByFilter",
 			Handler:    _DebtService_GetDebtByFilter_Handler,
+		},
+		{
+			MethodName: "UpdateStockDebt",
+			Handler:    _DebtService_UpdateStockDebt_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

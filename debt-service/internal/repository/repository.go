@@ -18,4 +18,5 @@ type IDebtRepository interface {
 	DeleteDebt(ctx context.Context, req *debtpb.DeleteDebtReq) (*debtpb.DebtResp, error)
 	GetDebtById(ctx context.Context, req *debtpb.GetDebtByIdReq) (*debtpb.DebtResp, error)
 	GetDebtByFilter(ctx context.Context, req *debtpb.GetDebtByFilterReq) (*debtpb.GetDebtByFilterResp, error)
+	UpdateStockDebt(ctx context.Context, req *debtpb.UpdateStockDebtReq) (*debtpb.DebtResp, error)
 }
