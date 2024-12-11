@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ProductService_CreateProduct_FullMethodName      = "/ProductService/CreateProduct"
-	ProductService_GetProductById_FullMethodName     = "/ProductService/GetProductById"
-	ProductService_GetProductByFilter_FullMethodName = "/ProductService/GetProductByFilter"
-	ProductService_UpdateStock_FullMethodName        = "/ProductService/UpdateStock"
-	ProductService_UpdateProduct_FullMethodName      = "/ProductService/UpdateProduct"
-	ProductService_DeleteProduct_FullMethodName      = "/ProductService/DeleteProduct"
+	ProductService_CreateProduct_FullMethodName           = "/ProductService/CreateProduct"
+	ProductService_GetProductById_FullMethodName          = "/ProductService/GetProductById"
+	ProductService_GetProductByFilter_FullMethodName      = "/ProductService/GetProductByFilter"
+	ProductService_UpdateStock_FullMethodName             = "/ProductService/UpdateStock"
+	ProductService_UpdateProduct_FullMethodName           = "/ProductService/UpdateProduct"
+	ProductService_DeleteProduct_FullMethodName           = "/ProductService/DeleteProduct"
+	ProductService_AddProductCountAndColor_FullMethodName = "/ProductService/AddProductCountAndColor"
 )
 
 // ProductServiceClient is the client API for ProductService service.
@@ -37,6 +38,7 @@ type ProductServiceClient interface {
 	UpdateStock(ctx context.Context, in *UpdateStockRequest, opts ...grpc.CallOption) (*UpdateStockResponse, error)
 	UpdateProduct(ctx context.Context, in *UpdateProductRequest, opts ...grpc.CallOption) (*UpdateProductResponse, error)
 	DeleteProduct(ctx context.Context, in *DeleteProductRequest, opts ...grpc.CallOption) (*DeleteProductResponse, error)
+	AddProductCountAndColor(ctx context.Context, in *AddProductCountAndColorRequest, opts ...grpc.CallOption) (*AddProductCountAndColorResponse, error)
 }
 
 type productServiceClient struct {
@@ -107,6 +109,16 @@ func (c *productServiceClient) DeleteProduct(ctx context.Context, in *DeleteProd
 	return out, nil
 }
 
+func (c *productServiceClient) AddProductCountAndColor(ctx context.Context, in *AddProductCountAndColorRequest, opts ...grpc.CallOption) (*AddProductCountAndColorResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddProductCountAndColorResponse)
+	err := c.cc.Invoke(ctx, ProductService_AddProductCountAndColor_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProductServiceServer is the server API for ProductService service.
 // All implementations must embed UnimplementedProductServiceServer
 // for forward compatibility.
@@ -117,6 +129,7 @@ type ProductServiceServer interface {
 	UpdateStock(context.Context, *UpdateStockRequest) (*UpdateStockResponse, error)
 	UpdateProduct(context.Context, *UpdateProductRequest) (*UpdateProductResponse, error)
 	DeleteProduct(context.Context, *DeleteProductRequest) (*DeleteProductResponse, error)
+	AddProductCountAndColor(context.Context, *AddProductCountAndColorRequest) (*AddProductCountAndColorResponse, error)
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -144,6 +157,9 @@ func (UnimplementedProductServiceServer) UpdateProduct(context.Context, *UpdateP
 }
 func (UnimplementedProductServiceServer) DeleteProduct(context.Context, *DeleteProductRequest) (*DeleteProductResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteProduct not implemented")
+}
+func (UnimplementedProductServiceServer) AddProductCountAndColor(context.Context, *AddProductCountAndColorRequest) (*AddProductCountAndColorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddProductCountAndColor not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 func (UnimplementedProductServiceServer) testEmbeddedByValue()                        {}
@@ -274,6 +290,24 @@ func _ProductService_DeleteProduct_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProductService_AddProductCountAndColor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddProductCountAndColorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProductServiceServer).AddProductCountAndColor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ProductService_AddProductCountAndColor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProductServiceServer).AddProductCountAndColor(ctx, req.(*AddProductCountAndColorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProductService_ServiceDesc is the grpc.ServiceDesc for ProductService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +338,10 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteProduct",
 			Handler:    _ProductService_DeleteProduct_Handler,
+		},
+		{
+			MethodName: "AddProductCountAndColor",
+			Handler:    _ProductService_AddProductCountAndColor_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"debt-service/genproto/debtpb"
+	"debt-service/internal/kafka/producer"
 	"debt-service/internal/storage"
 	"debt-service/logger"
+	"encoding/json"
 	"strconv"
 	"time"
 
@@ -13,7 +15,8 @@ import (
 )
 
 type DebtREPO struct {
-	queries *storage.Queries
+	queries  *storage.Queries
+	producer producer.IProducerInit
 }
 
 func NewDebtSqlc(db *sql.DB) *storage.Queries {
@@ -27,12 +30,6 @@ func (q *DebtREPO) CreateDebt(ctx context.Context, req *debtpb.CreateDebtReq) (*
 	deadlineTime, err := time.Parse("2006-01-02", req.Deadline)
 	if err != nil {
 		logger.Error("CreateDebt: Invalid deadline format - ", err)
-		return nil, err
-	}
-
-	floatPricePaid, err := strconv.ParseFloat(req.PricePaid, 64)
-	if err != nil {
-		logger.Error("CreateDebt: Invalid price paid - ", err)
 		return nil, err
 	}
 
@@ -50,7 +47,7 @@ func (q *DebtREPO) CreateDebt(ctx context.Context, req *debtpb.CreateDebtReq) (*
 		Address:      req.Address,
 		BagID:        req.BagId,
 		Price:        priceFloat,
-		PricePaid:    floatPricePaid,
+		PricePaid:    0,
 		Acquaintance: sql.NullString{String: req.Acquaintance, Valid: req.Acquaintance != ""},
 		Collateral:   sql.NullString{String: req.Collateral, Valid: req.Collateral != ""},
 		Deadline:     deadlineTime,
@@ -63,6 +60,19 @@ func (q *DebtREPO) CreateDebt(ctx context.Context, req *debtpb.CreateDebtReq) (*
 
 	logger.Info("CreateDebt: Successfully created debt for ", req.FirstName, " ", req.LastName)
 
+	kafkaReq := map[string]string{
+		"id":    req.BagId,
+		"color": req.Color,
+	}
+	kafkaReqBytes, err := json.Marshal(kafkaReq)
+	if err != nil {
+		return nil, err
+	}
+	err = q.producer.ProduceMessage("commandForProductAddDebtColor", []byte(kafkaReqBytes))
+	if err != nil {
+		return nil, err
+	}
+
 	return &debtpb.DebtResp{
 		Status:  true,
 		Message: "Debt Created Successfully",
@@ -74,7 +84,6 @@ func (q *DebtREPO) CreateDebt(ctx context.Context, req *debtpb.CreateDebtReq) (*
 			Jshshir:      resp.Jshshir,
 			Address:      resp.Address,
 			Price:        req.Price,
-			PricePaid:    req.PricePaid,
 			Acquaintance: resp.Acquaintance.String,
 			Collateral:   resp.Collateral.String,
 			Deadline:     resp.Deadline.String(),

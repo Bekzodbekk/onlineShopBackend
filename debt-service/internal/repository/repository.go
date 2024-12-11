@@ -3,12 +3,14 @@ package repository
 import (
 	"context"
 	"debt-service/genproto/debtpb"
+	"debt-service/internal/kafka/producer"
 	"debt-service/internal/storage"
 )
 
-func NewIDebtRepository(queries *storage.Queries) IDebtRepository {
+func NewIDebtRepository(queries *storage.Queries, produce *producer.IProducerInit) IDebtRepository {
 	return &DebtREPO{
-		queries: queries,
+		queries:  queries,
+		producer: *produce,
 	}
 }
 

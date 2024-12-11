@@ -8,9 +8,10 @@ type ServiceConfig struct {
 }
 
 type KafkaConfig struct {
-	Host  string
-	Port  int
-	Topic string
+	Host          string
+	Port          int
+	TopicProducts string
+	TopicDebts    string
 }
 
 type MongoConfig struct {
@@ -43,9 +44,10 @@ func Load(path string) (*Config, error) {
 		},
 
 		Kafka: KafkaConfig{
-			Host:  viper.GetString("kafka.host"),
-			Port:  viper.GetInt("kafka.port"),
-			Topic: viper.GetString("kafka.topic"),
+			Host:          viper.GetString("kafka.host"),
+			Port:          viper.GetInt("kafka.port"),
+			TopicProducts: viper.GetString("kafka.topic-products"),
+			TopicDebts:    viper.GetString("kafka.topic-debts"),
 		},
 
 		Mongo: MongoConfig{

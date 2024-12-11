@@ -2,6 +2,12 @@ service:
   host: localhost
   port: 8003
 
+kafka:
+  host: localhost
+  port: 29092
+  topic-products: products
+  topic-debts: debts
+
 postgres:
   host: localhost
   port: 5432

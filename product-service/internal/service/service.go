@@ -42,10 +42,10 @@ func (service *ProductService) UpdateStock(ctx context.Context, req *pb.UpdateSt
 	}
 
 	kafkaMessage := map[string]interface{}{
-		"cost_price":    req.CostPrice,
-		"selling_price": req.SellingPrice,
-		"product_id":    req.ProductId,
-		"product_color": req.ProductColor,
+		"product_id": req.ProductId,
+		"color":      req.ProductColor,
+		"price":      req.Price,
+		"paid_price": req.PaidPrice,
 	}
 
 	message, err := json.Marshal(kafkaMessage)
@@ -54,7 +54,7 @@ func (service *ProductService) UpdateStock(ctx context.Context, req *pb.UpdateSt
 		return nil, err
 	}
 
-	err = service.producer.ProduceMessage(req.ProductId, message)
+	err = service.producer.ProduceMessage("commandProductsForDashboard", message)
 	if err != nil {
 		logger.Error("Failed to produce message to Kafka: ", err)
 		return nil, err
@@ -69,4 +69,8 @@ func (service *ProductService) UpdateProduct(ctx context.Context, req *pb.Update
 
 func (service *ProductService) DeleteProduct(ctx context.Context, req *pb.DeleteProductRequest) (*pb.DeleteProductResponse, error) {
 	return service.productRepo.DeleteProduct(req)
+}
+
+func (service *ProductService) AddProductCountAndColor(ctx context.Context, req *pb.AddProductCountAndColorRequest) (*pb.AddProductCountAndColorResponse, error) {
+	return service.productRepo.AddProductCountAndColor(req)
 }

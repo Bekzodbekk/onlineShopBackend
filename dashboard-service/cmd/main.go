@@ -1,74 +1,44 @@
 package main
 
 import (
-	"context"
-	app "dashboard-service/internal/app"
-	config "dashboard-service/internal/config"
-	kafka "dashboard-service/internal/kafka/consumer"
+	dashboardservice "dashboard-service/internal/dashboard-service"
+	"dashboard-service/internal/pkg/config"
+	"dashboard-service/internal/pkg/kafka/consumer"
+	"dashboard-service/internal/pkg/postgres"
 	"dashboard-service/internal/repository"
-	pq "dashboard-service/internal/repository/postgres"
-	service "dashboard-service/internal/service"
-	"dashboard-service/logger"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
-	"time"
+	"dashboard-service/internal/service"
+	"log"
 )
 
 func main() {
-
-	logger.InitLog()
-
-	cfg, err := config.Load("./config/config.yaml")
+	cfg, err := config.LOAD("../config/config.yaml")
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
-	logger.Info("Configuration loaded")
 
-	db, err := pq.ConnectDB(cfg)
+	db, err := postgres.InitDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
-	logger.Info("Connected to Postgresql")
+	queries := postgres.Queries(db)
+	repo := repository.NewDashboardREPO(queries)
+	repoForConsumer := repository.NewForConsumerDashboardRepo(queries)
+	service := service.NewService(repo)
 
-	queries := repository.NewDashboardSqlc(db)
-	repo := repository.NewIDashboardRepository(queries)
-
-	consumer, err := kafka.NewConsumeInit(cfg, repo)
+	consumerClient, err := consumer.NewConsumeInit(cfg, *repoForConsumer)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
-	defer consumer.Close()
-
-	srv := service.NewDashboardService(repo)
-
-	application := app.New(*srv, cfg.Service.Port)
-
-	var wg sync.WaitGroup
-	wg.Add(2)
 
 	go func() {
-		defer wg.Done()
-		consumer.ConsumeMessage()
+		err := consumerClient.ConsumeMessage()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
-
-	go func() {
-		defer wg.Done()
-		application.MustRun()
-	}()
-	wg.Wait()
-
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
-
-	sig := <-stop
-
-	logger.Info("Received signal: ", sig)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	application.Stop()
-	<-ctx.Done()
-	logger.Info("Graceful shutdown complete.")
+	runGRPC := dashboardservice.NewRunGRPC(service)
+	log.Printf("Dashboard Service Running on :%d port", cfg.DashboardServicePort)
+	if err := runGRPC.RUN(cfg); err != nil {
+		log.Fatal(err)
+	}
 }

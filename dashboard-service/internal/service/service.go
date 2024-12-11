@@ -2,21 +2,21 @@ package service
 
 import (
 	"context"
-	pb "dashboard-service/genproto/dashboardpb"
+	"dashboard-service/genproto/dashboardpb"
 	"dashboard-service/internal/repository"
 )
 
-type DashboardService struct {
-	pb.UnimplementedDashboardServiceServer
-	reportRepo repository.IDashboardRepository
+type Service struct {
+	dashboardpb.UnimplementedDashboardServiceServer
+	repo repository.IDashboardRepository
 }
 
-func NewDashboardService(repo repository.IDashboardRepository) *DashboardService {
-	return &DashboardService{
-		reportRepo: repo,
+func NewService(repo repository.IDashboardRepository) *Service {
+	return &Service{
+		repo: repo,
 	}
 }
 
-func (service *DashboardService) GetDashboardReport(ctx context.Context, req *pb.GetDashboardReportRequest) (*pb.GetDashboardReportResponse, error) {
-	return service.reportRepo.GetDashboardReport()
+func (s *Service) GetDashboardInfo(ctx context.Context, req *dashboardpb.GetDashboardInfoReq) (*dashboardpb.GetDashboardInfoResp, error) {
+	return s.repo.GetDashboardInfo(ctx, req)
 }

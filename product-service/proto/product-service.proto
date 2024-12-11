@@ -9,6 +9,7 @@ service ProductService {
     rpc UpdateStock(UpdateStockRequest) returns (UpdateStockResponse);
     rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
     rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+    rpc AddProductCountAndColor(AddProductCountAndColorRequest) returns (AddProductCountAndColorResponse);
 }
 
 message Product {
@@ -56,10 +57,10 @@ message GetProductByFilterResponse {
 }
 
 message UpdateStockRequest {
-    int64 cost_price = 1;
-    int64 selling_price = 2;
-    string product_id = 3;
-    string product_color = 4;
+    string product_id = 1;
+    string product_color = 2;
+    int64 price = 3;
+    int64 paid_price = 4;
 }
 
 message UpdateStockResponse {
@@ -76,6 +77,16 @@ message UpdateProductRequest {
     string size = 8;
     map<string, int32> colors = 9;
     int32 count = 10;
+}
+
+message AddProductCountAndColorRequest{
+    string id = 1;
+    map<string, int32> colors = 2;
+}
+message AddProductCountAndColorResponse{
+    bool status = 1;
+    string message = 2;
+    Product Product = 3;
 }
 
 message UpdateProductResponse {

@@ -7,10 +7,12 @@ import (
 	"product-service/internal/storage/models"
 	m "product-service/internal/storage/mongodb"
 	"product-service/logger"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -27,46 +29,78 @@ func NewProductRepository(mongosh *m.Mongo) IProductRepository {
 const constanta = "allDataFromongo"
 
 func (db *ProductRepo) CreateProduct(req *pb.CreateProductRequest) (*pb.CreateProductResponse, error) {
-
 	logger.Info("CreateProduct: started: ", req.Name)
+	// So'nggi mahsulotni topish
+	var lastProduct bson.M
+	opts := options.FindOne().SetSort(bson.D{{Key: "bag_id", Value: -1}})
+	err := db.mongo.Collection.FindOne(
+		context.Background(),
+		bson.D{},
+		opts,
+	).Decode(&lastProduct)
 
-	resp := pb.CreateProductResponse{}
+	var newBagId int64
+	if err == mongo.ErrNoDocuments {
+		newBagId = 1
+	} else if err != nil {
+		logger.Error("CreateProduct: error finding last product - ", err)
+		return nil, fmt.Errorf("failed to find last product: %v", err)
+	} else {
+		lastBagId, ok := lastProduct["bag_id"].(string)
+		if !ok {
+			newBagId = 1
+		} else {
+			intNewBagID, err := strconv.ParseInt(lastBagId, 10, 64)
+			if err != nil {
+				return nil, err
+			}
 
+			newBagId = intNewBagID + 1
+		}
+	}
 	createdAt := time.Now().Format("2006-01-02 15:04:05")
-	result, err := db.mongo.Collection.InsertOne(context.Background(), bson.D{
+
+	// Mahsulot hujjatini tayyorlash
+	productDocument := bson.D{
 		{Key: "image_url", Value: req.ImageUrl},
 		{Key: "name", Value: req.Name},
 		{Key: "unique_number", Value: req.UniqueNumber},
-		{Key: "bag_id", Value: req.BagId},
+		{Key: "bag_id", Value: strconv.FormatInt(newBagId, 10)},
 		{Key: "price", Value: req.Price},
 		{Key: "size", Value: req.Size},
 		{Key: "colors", Value: req.Colors},
 		{Key: "count", Value: req.Count},
 		{Key: "created_at", Value: createdAt},
-		{Key: "updated_at", Value: ""},
+		{Key: "updated_at", Value: time.Now().String()},
 		{Key: "deleted_at", Value: 0},
-	})
+	}
+
+	// Mahsulotni bazaga qo'shish
+	result, err := db.mongo.Collection.InsertOne(context.Background(), productDocument)
 	if err != nil {
 		logger.Error("CreateProduct: error creating product - ", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to insert product: %v", err)
 	}
 
+	fmt.Println(productDocument)
+
+	// MongoDB ObjectID-ni olish
 	var productID string
 	objectID, ok := result.InsertedID.(primitive.ObjectID)
-	if ok {
-		productID = objectID.Hex()
-	} else {
-		logger.Error("CreateProduct: error with product id (primitive.ObjectID)")
-		return nil, err
+	if !ok {
+		logger.Error("CreateProduct: error converting InsertedID to ObjectID")
+		return nil, fmt.Errorf("failed to convert product ID")
 	}
+	productID = objectID.Hex()
 
-	resp = pb.CreateProductResponse{
+	// Javobni tayyorlash
+	resp := &pb.CreateProductResponse{
 		Product: &pb.Product{
 			ImageUrl:     req.ImageUrl,
 			Id:           productID,
 			Name:         req.Name,
 			UniqueNumber: req.UniqueNumber,
-			BagId:        req.BagId,
+			BagId:        strconv.FormatInt(newBagId, 10),
 			Price:        req.Price,
 			Size:         req.Size,
 			Colors:       req.Colors,
@@ -82,7 +116,7 @@ func (db *ProductRepo) CreateProduct(req *pb.CreateProductRequest) (*pb.CreatePr
 	}
 
 	logger.Info("CreateProduct: product successfully created: ", resp.Product.Id)
-	return &resp, nil
+	return resp, nil
 }
 
 func (db *ProductRepo) GetProductById(req *pb.GetProductByIdRequest) (*pb.GetProductByIdResponse, error) {
@@ -129,7 +163,6 @@ func (db *ProductRepo) GetProductById(req *pb.GetProductByIdRequest) (*pb.GetPro
 		},
 	}
 
-	// logger.Info("GetProductById: got product successfully: ", get.Name)
 	resp.Product = &product
 	return &resp, nil
 }
@@ -239,6 +272,9 @@ func (db *ProductRepo) UpdateStock(req *pb.UpdateStockRequest) (*pb.UpdateStockR
 			{Key: fmt.Sprintf("colors.%s", req.ProductColor), Value: currentCount - 1},
 			{Key: "updated_at", Value: updatedAt},
 		},
+		"$inc": bson.M{
+			"count": -1, // Umumiy count dan 1 kamaytirish
+		},
 	}
 
 	result, err := db.mongo.Collection.UpdateOne(context.Background(), filter, update)
@@ -345,4 +381,38 @@ func (db *ProductRepo) DeleteProduct(req *pb.DeleteProductRequest) (*pb.DeletePr
 	}
 	logger.Info("DeleteProduct: product successfully deleted: ", req.Id)
 	return &resp, nil
+}
+func (db *ProductRepo) AddProductCountAndColor(req *pb.AddProductCountAndColorRequest) (*pb.AddProductCountAndColorResponse, error) {
+	ctx := context.Background()
+	id, err := primitive.ObjectIDFromHex(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// UpdateOne uchun update operatsiyalarini yaratish
+	updates := bson.D{}
+
+	// Ranglarni qayta ishlash
+	for color, value := range req.Colors {
+		// Har bir rang uchun increment qo'shish
+		updates = append(updates, primitive.E{
+			Key:   "colors." + color,
+			Value: value,
+		})
+	}
+
+	// MongoDB ga yangilash so'rovi
+	_, err = db.mongo.Collection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$inc": updates},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.AddProductCountAndColorResponse{
+		Status:  true,
+		Message: "success",
+	}, nil
 }

@@ -50,9 +50,13 @@ func (s *ServiceRepositoryClient) DeleteProduct(ctx context.Context, req *pbProd
 	return s.productClient.DeleteProduct(ctx, req)
 }
 
+func (s *ServiceRepositoryClient) AddProductCountAndColor(ctx context.Context, req *pbProduct.AddProductCountAndColorRequest) (*pbProduct.AddProductCountAndColorResponse, error) {
+	return s.productClient.AddProductCountAndColor(ctx, req)
+}
+
 // Dashboard methods
-func (s *ServiceRepositoryClient) GetDashboardReport(ctx context.Context, req *pbDashboard.GetDashboardReportRequest) (*pbDashboard.GetDashboardReportResponse, error) {
-	return s.dashboardClient.GetDashboardReport(ctx, req)
+func (s *ServiceRepositoryClient) GetDashboardReport(ctx context.Context, req *pbDashboard.GetDashboardInfoReq) (*pbDashboard.GetDashboardInfoResp, error) {
+	return s.dashboardClient.GetDashboardInfo(ctx, req)
 }
 
 // Debt methods

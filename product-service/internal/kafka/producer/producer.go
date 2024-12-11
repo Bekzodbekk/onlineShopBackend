@@ -1,10 +1,10 @@
 package producer
 
 import (
-	"product-service/logger"
-	"product-service/internal/config"
 	"context"
 	"fmt"
+	"product-service/internal/config"
+	"product-service/logger"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -18,7 +18,6 @@ type ProducerInit struct {
 	client *kgo.Client
 	topic  string
 }
-
 
 func NewProducerInit(cfg *config.Config) (IProducerInit, error) {
 
@@ -34,21 +33,21 @@ func NewProducerInit(cfg *config.Config) (IProducerInit, error) {
 	}
 	logger.Info("Kafka client initialized successfully")
 	return &ProducerInit{
-		client: client, 
-		topic: cfg.Kafka.Topic,
+		client: client,
+		topic:  cfg.Kafka.TopicProducts,
 	}, nil
 }
 
 func (p *ProducerInit) ProduceMessage(key string, message []byte) error {
 
 	logger.Info("Producing message to topic:", p.topic, " with key:", key)
-	
+
 	record := &kgo.Record{
 		Topic: p.topic,
 		Key:   []byte(key),
 		Value: message,
 	}
-	
+
 	err := p.client.ProduceSync(context.Background(), record).FirstErr()
 	if err != nil {
 		logger.Error(err)

@@ -20,17 +20,12 @@ import (
 // @Failure 500 {object} string
 func (h *HandlerST) GetDashboardReport(c *gin.Context) {
 
-	resp, err := h.service.GetDashboardReport(context.Background(), &pb.GetDashboardReportRequest{})
+	resp, err := h.service.GetDashboardReport(context.Background(), &pb.GetDashboardInfoReq{})
 	if err != nil {
 		logger.Error("GetDashboardReport: Service error - ", err)
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	logger.Info("GetDashboardReport: Successfully retrieved report")
-	c.JSON(200, gin.H{
-		"total_sales": resp.TotalSales,
-		"total_cost_price": resp.TotalCostPrice,
-		"total_net_profit": resp.TotalNetProfit,
-		"total_units_sold": resp.TotalUnitsSold,
-	})
+	c.JSON(200, resp)
 }

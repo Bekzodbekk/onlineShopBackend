@@ -4,10 +4,12 @@ import (
 	"context"
 	app "debt-service/internal/app"
 	config "debt-service/internal/config"
+	"debt-service/internal/kafka/producer"
 	"debt-service/internal/repository"
 	pq "debt-service/internal/repository/postgres"
 	service "debt-service/internal/service"
 	"debt-service/logger"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,6 +25,10 @@ func main() {
 		logger.Fatal(err)
 	}
 	logger.Info("Configuration loaded")
+	produce, err := producer.NewProducerInit(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	db, err := pq.ConnectDB(cfg)
 	if err != nil {
@@ -31,7 +37,7 @@ func main() {
 	logger.Info("Connected to Postgresql")
 
 	queries := repository.NewDebtSqlc(db)
-	repo := repository.NewIDebtRepository(queries)
+	repo := repository.NewIDebtRepository(queries, &produce)
 
 	srv := service.NewDebtService(repo)
 

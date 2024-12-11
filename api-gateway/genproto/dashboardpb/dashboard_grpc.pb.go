@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DashboardService_GetDashboardReport_FullMethodName = "/DashboardService/GetDashboardReport"
+	DashboardService_GetDashboardInfo_FullMethodName = "/DashboardService/GetDashboardInfo"
 )
 
 // DashboardServiceClient is the client API for DashboardService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DashboardServiceClient interface {
-	GetDashboardReport(ctx context.Context, in *GetDashboardReportRequest, opts ...grpc.CallOption) (*GetDashboardReportResponse, error)
+	GetDashboardInfo(ctx context.Context, in *GetDashboardInfoReq, opts ...grpc.CallOption) (*GetDashboardInfoResp, error)
 }
 
 type dashboardServiceClient struct {
@@ -37,10 +37,10 @@ func NewDashboardServiceClient(cc grpc.ClientConnInterface) DashboardServiceClie
 	return &dashboardServiceClient{cc}
 }
 
-func (c *dashboardServiceClient) GetDashboardReport(ctx context.Context, in *GetDashboardReportRequest, opts ...grpc.CallOption) (*GetDashboardReportResponse, error) {
+func (c *dashboardServiceClient) GetDashboardInfo(ctx context.Context, in *GetDashboardInfoReq, opts ...grpc.CallOption) (*GetDashboardInfoResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetDashboardReportResponse)
-	err := c.cc.Invoke(ctx, DashboardService_GetDashboardReport_FullMethodName, in, out, cOpts...)
+	out := new(GetDashboardInfoResp)
+	err := c.cc.Invoke(ctx, DashboardService_GetDashboardInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *dashboardServiceClient) GetDashboardReport(ctx context.Context, in *Get
 // All implementations must embed UnimplementedDashboardServiceServer
 // for forward compatibility.
 type DashboardServiceServer interface {
-	GetDashboardReport(context.Context, *GetDashboardReportRequest) (*GetDashboardReportResponse, error)
+	GetDashboardInfo(context.Context, *GetDashboardInfoReq) (*GetDashboardInfoResp, error)
 	mustEmbedUnimplementedDashboardServiceServer()
 }
 
@@ -62,8 +62,8 @@ type DashboardServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedDashboardServiceServer struct{}
 
-func (UnimplementedDashboardServiceServer) GetDashboardReport(context.Context, *GetDashboardReportRequest) (*GetDashboardReportResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDashboardReport not implemented")
+func (UnimplementedDashboardServiceServer) GetDashboardInfo(context.Context, *GetDashboardInfoReq) (*GetDashboardInfoResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDashboardInfo not implemented")
 }
 func (UnimplementedDashboardServiceServer) mustEmbedUnimplementedDashboardServiceServer() {}
 func (UnimplementedDashboardServiceServer) testEmbeddedByValue()                          {}
@@ -86,20 +86,20 @@ func RegisterDashboardServiceServer(s grpc.ServiceRegistrar, srv DashboardServic
 	s.RegisterService(&DashboardService_ServiceDesc, srv)
 }
 
-func _DashboardService_GetDashboardReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDashboardReportRequest)
+func _DashboardService_GetDashboardInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDashboardInfoReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DashboardServiceServer).GetDashboardReport(ctx, in)
+		return srv.(DashboardServiceServer).GetDashboardInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DashboardService_GetDashboardReport_FullMethodName,
+		FullMethod: DashboardService_GetDashboardInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DashboardServiceServer).GetDashboardReport(ctx, req.(*GetDashboardReportRequest))
+		return srv.(DashboardServiceServer).GetDashboardInfo(ctx, req.(*GetDashboardInfoReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +112,8 @@ var DashboardService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DashboardServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetDashboardReport",
-			Handler:    _DashboardService_GetDashboardReport_Handler,
+			MethodName: "GetDashboardInfo",
+			Handler:    _DashboardService_GetDashboardInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

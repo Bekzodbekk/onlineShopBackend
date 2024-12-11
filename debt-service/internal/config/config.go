@@ -15,9 +15,17 @@ type PostgresConfig struct {
 	Database string
 }
 
+type Kafka struct {
+	Host          string
+	Port          int
+	TopicProducts string
+	TopicDebts    string
+}
+
 type Config struct {
 	Service  ServiceConfig
 	Postgres PostgresConfig
+	Kafka    Kafka
 }
 
 func Load(path string) (*Config, error) {
@@ -39,6 +47,12 @@ func Load(path string) (*Config, error) {
 			Database: viper.GetString("postgres.dbname"),
 			User:     viper.GetString("postgres.user"),
 			Password: viper.GetString("postgres.password"),
+		},
+		Kafka: Kafka{
+			Host:          viper.GetString("kafka.host"),
+			Port:          viper.GetInt("kafka.port"),
+			TopicProducts: viper.GetString("kafka.topic-products"),
+			TopicDebts:    viper.GetString("kafka.topic-debts"),
 		},
 	}
 

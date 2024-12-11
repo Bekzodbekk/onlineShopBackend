@@ -41,8 +41,8 @@ message CreateDebtReq{
     string jshshir = 4;
     string address = 5;
     string bag_id = 6;
-    string price = 7;
-    string price_paid = 8;
+    string color = 7;
+    string price = 8;
     string acquaintance = 9;
     string collateral = 10;
     string deadline = 11;

@@ -1,18 +1,10 @@
 package repository
 
 import (
-	pb "dashboard-service/genproto/dashboardpb"
-	"dashboard-service/internal/repository/models"
-	"dashboard-service/internal/storage"
+	"context"
+	"dashboard-service/genproto/dashboardpb"
 )
 
-func NewIDashboardRepository(storage *storage.Queries) IDashboardRepository {
-	return &DashboardRepo{
-		storage: storage,
-	}
-}
-
 type IDashboardRepository interface {
-	UpsertProductSales(req models.ProductSalesUpdateRequest) error
-	GetDashboardReport() (*pb.GetDashboardReportResponse, error)
+	GetDashboardInfo(ctx context.Context, req *dashboardpb.GetDashboardInfoReq) (*dashboardpb.GetDashboardInfoResp, error)
 }

@@ -291,3 +291,19 @@ func (h *HandlerST) DeleteProduct(c *gin.Context) {
 	logger.Info("DeleteProduct: Successfully ", resp.Message)
 	c.JSON(200, resp)
 }
+
+func (h *HandlerST) AddProductCountAndColor(c *gin.Context) {
+	req := pb.AddProductCountAndColorRequest{}
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, err.Error())
+		return
+	}
+
+	resp, err := h.service.AddProductCountAndColor(c, &req)
+	if err != nil {
+		c.JSON(500, err.Error())
+		return
+	}
+
+	c.JSON(200, resp)
+}

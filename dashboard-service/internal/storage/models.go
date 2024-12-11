@@ -6,15 +6,27 @@ package storage
 
 import (
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
-type Dashboard struct {
-	ProductID    string
-	UnitsSold    sql.NullInt32
-	Color        string
-	CostPrice    int64
-	SellingPrice int64
-	CreatedAt    sql.NullTime
-	UpdatedAt    sql.NullTime
-	DeletedAt    sql.NullInt64
+type DebtDashboard struct {
+	ID        uuid.UUID
+	DebtID    string
+	DebtPrice int32
+	PaidPrice int32
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+	DeletedAt sql.NullInt64
+}
+
+type ProductDashboard struct {
+	ID        uuid.UUID
+	ProductID string
+	Color     string
+	Price     int32
+	PaidPrice int32
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+	DeletedAt sql.NullInt64
 }

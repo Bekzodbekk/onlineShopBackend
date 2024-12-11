@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 	app "product-service/internal/app"
 	config "product-service/internal/config"
+	"product-service/internal/kafka/consumer"
+	kafka "product-service/internal/kafka/producer"
 	service "product-service/internal/service"
 	"product-service/internal/storage"
 	mongo "product-service/internal/storage/mongodb"
-	kafka "product-service/internal/kafka/producer"
 	"product-service/logger"
 	"syscall"
 	"time"
@@ -38,11 +40,18 @@ func main() {
 		logger.Fatal(err)
 	}
 	defer producer.Close()
-	
+
 	srv := service.NewProductService(repo, producer)
 
 	application := app.New(*srv, cfg.Service.Port)
+	consume, err := consumer.NewConsumeInit(cfg, *db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	go func() {
+		consume.ConsumeMessage()
+	}()
 	go func() {
 		application.MustRun()
 	}()

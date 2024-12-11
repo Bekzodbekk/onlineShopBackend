@@ -44,6 +44,7 @@ func NewGin(service *service.ServiceRepositoryClient, port int, minio *minio.Cli
 	r.GET("/products/:id/ws", apiHandler.GetProductByIdSocket)
 	r.GET("/products", apiHandler.GetProductByFilter)
 	r.DELETE("/products/:id", apiHandler.DeleteProduct)
+	r.PUT("/products/add-count", apiHandler.AddProductCountAndColor)
 
 	r.GET("/dashboard", apiHandler.GetDashboardReport)
 
